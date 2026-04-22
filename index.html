@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brighton & Hove Albion Player Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #003d7a 0%, #0066cc 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #003d7a;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .filter-btn:hover {
+            border-color: #003d7a;
+            color: #003d7a;
+        }
+
+        .filter-btn.active {
+            background: #003d7a;
+            color: white;
+            border-color: #003d7a;
+        }
+
+        .player-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .player-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .player-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.2);
+        }
+
+        .player-header {
+            background: #003d7a;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .player-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .player-name {
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .player-position {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .player-body {
+            padding: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .info-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #003d7a;
+            font-weight: 600;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #eee;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #003d7a;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .no-results {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            padding: 40px;
+        }
+
+        .status-active {
+            color: #27ae60;
+            font-weight: 600;
+        }
+
+        .status-injured {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        .status-on-loan {
+            color: #f39c12;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔵⚪ Brighton & Hove Albion Player Tracker</h1>
+            <p>Squad information and player statistics</p>
+        </header>
+
+        <div class="controls">
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Search player name or number..."
+                    autocomplete="off"
+                >
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-position="all">All</button>
+                <button class="filter-btn" data-position="GK">Goalkeeper</button>
+                <button class="filter-btn" data-position="DEF">Defender</button>
+                <button class="filter-btn" data-position="MID">Midfielder</button>
+                <button class="filter-btn" data-position="FWD">Forward</button>
+            </div>
+        </div>
+
+        <div class="player-grid" id="playerGrid"></div>
+        <div class="no-results" id="noResults" style="display: none;">
+            No players found matching your criteria
+        </div>
+    </div>
+
+    <script src="players.js"></script>
+    <script>
+        let allPlayers = [];
+        let currentFilter = 'all';
+
+        // Load players
+        async function loadPlayers() {
+            try {
+                const response = await fetch('players.json');
+                allPlayers = await response.json();
+                renderPlayers();
+            } catch (error) {
+                console.error('Error loading players:', error);
+                document.getElementById('playerGrid').innerHTML = '<div class="no-results">Error loading player data</div>';
+            }
+        }
+
+        // Render players
+        function renderPlayers() {
+            const grid = document.getElementById('playerGrid');
+            const noResults = document.getElementById('noResults');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            const filtered = allPlayers.filter(player => {
+                const matchesSearch = 
+                    player.name.toLowerCase().includes(searchTerm) ||
+                    player.number.toString().includes(searchTerm);
+                const matchesFilter = currentFilter === 'all' || player.position === currentFilter;
+                return matchesSearch && matchesFilter;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                noResults.style.display = 'block';
+                return;
+            }
+
+            noResults.style.display = 'none';
+            grid.innerHTML = filtered.map(player => createPlayerCard(player)).join('');
+        }
+
+        // Create player card HTML
+        function createPlayerCard(player) {
+            const statusClass = `status-${player.status.toLowerCase().replace(' ', '-')}`;
+            return `
+                <div class="player-card">
+                    <div class="player-header">
+                        <div class="player-number">#${player.number}</div>
+                        <div class="player-name">${player.name}</div>
+                        <div class="player-position">${player.position} • ${player.nationality}</div>
+                    </div>
+                    <div class="player-body">
+                        <div class="info-row">
+                            <span class="info-label">Age</span>
+                            <span class="info-value">${player.age}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Height</span>
+                            <span class="info-value">${player.height}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Weight</span>
+                            <span class="info-value">${player.weight}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Joined</span>
+                            <span class="info-value">${player.joined}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Status</span>
+                            <span class="${statusClass}">${player.status}</span>
+                        </div>
+                        <div class="stats">
+                            <div class="stat">
+                                <div class="stat-value">${player.appearances}</div>
+                                <div class="stat-label">Appearances</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${player.goals}</div>
+                                <div class="stat-label">Goals</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${player.assists}</div>
+                                <div class="stat-label">Assists</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${player.cards}</div>
+                                <div class="stat-label">Cards</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', renderPlayers);
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentFilter = e.target.dataset.position;
+                renderPlayers();
+            });
+        });
+
+        // Initialize
+        loadPlayers();
+    </script>
+</body>
+</html>
